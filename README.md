@@ -3,7 +3,7 @@
 
   
 
-##### oc-tool is too for creating WordPress environment on OpenShift
+##### oc-tool is tool for creating WordPress environment on OpenShift
 
   
 
