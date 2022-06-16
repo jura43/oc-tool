@@ -12,7 +12,7 @@ data:
     location / {
         proxy_pass http://wp-$NAME;
       }
-    } nginx-production-
+    }
 
 ---
 apiVersion: apps/v1
