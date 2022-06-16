@@ -63,3 +63,15 @@ For making WordPress accessible to the Internet I create OpenShift Route object.
 Finally for deploying all previous specified object I create bash script that asks for a name to whom this WordPress set will be deployed or whose set will be deleted. Since OpenShift cluster doesn't have dynamic templating engine to replace strings within script I use envsubst command.
 
 [![](https://i.imgur.com/L6JQSVP.png)](https://i.imgur.com/L6JQSVP.png)
+
+
+## How to use script
+To use this script you have create project object in OpenShift cluster using web console or using following commands
+
+    oc new-project wordpress-test
+    oc new-project wordpress-production
+
+after cloing the repo you have add execute permission to the file and you are ready to go
+
+    chmod +x oc-tool.sh
+	./oc-tool.sh
