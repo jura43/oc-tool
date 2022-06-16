@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wp-pvc-test-$NAME
+  namespace: wordpress-test
+  labels:
+    app: wordpress-test-$NAME
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wp-test-$NAME
+  namespace: wordpress-test
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-test-$NAME
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wordpress-test-$NAME
+    spec:
+      containers:
+        - name: wp-test-$NAME
+          image: bitnami/wordpress:latest
+          env:
+            - name: MARIADB_HOST
+              value: "127.0.0.1"
+            - name: WORDPRESS_DATABASE_USER
+              value: "jura"
+            - name: WORDPRESS_DATABASE_PASSWORD
+              value: "jura"
+            - name: WORDPRESS_DATABASE_NAME
+              value: "wordpress_test_db"
+            - name: WORDPRESS_USER
+              value: "jura" 
+            - name: WORDPRESS_PASSWORD
+              value: "jura"
+          ports:
+          - containerPort: 8080
+          volumeMounts:
+            - name: wordpress-persistent-storage-$NAME
+              mountPath: /var/www/html
+        - name: mysql-test-db-$NAME
+          image: registry.redhat.io/rhel8/mysql-80
+          env:
+            - name: MYSQL_DATABASE
+              value: "wordpress_test_db"
+            - name: MYSQL_USER
+              value: "jura"
+            - name: MYSQL_PASSWORD
+              value: "jura"
+          ports:
+            - containerPort: 3306
+      volumes:
+        - name: wordpress-persistent-storage-$NAME
+          persistentVolumeClaim:
+          claimName: wp-pvc-test-$NAME
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wp-test-$NAME
+  namespace: wordpress-test
+spec:
+  selector:
+    app: wordpress-test-$NAME
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wp-pvc-prodcution-$NAME
+  namespace: wordpress-production
+  labels:
+    app: wordpress-$NAME
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wp-$NAME
+  namespace: wordpress-production
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-$NAME
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wordpress-$NAME
+    spec:
+      containers:
+        - name: wp-$NAME
+          image: bitnami/wordpress:latest
+          env:
+            - name: MARIADB_HOST
+              value: "127.0.0.1"
+            - name: WORDPRESS_DATABASE_USER
+              value: "jura"
+            - name: WORDPRESS_DATABASE_PASSWORD
+              value: "jura"
+            - name: WORDPRESS_DATABASE_NAME
+              value: "wordpress_db"
+            - name: WORDPRESS_USERNAME
+              value: "jura" 
+            - name: WORDPRESS_PASSWORD
+              value: "jura" 
+          ports:
+          - containerPort: 8080
+          volumeMounts:
+            - name: wordpress-persistent-storage-$NAME
+              mountPath: /var/www/html
+        - name: mysql-db-$NAME
+          image: registry.redhat.io/rhel8/mysql-80
+          env:
+            - name: MYSQL_DATABASE
+              value: "wordpress_db"
+            - name: MYSQL_USER
+              value: "jura"
+            - name: MYSQL_PASSWORD
+              value: "jura"
+          ports:
+            - containerPort: 3306
+      volumes:
+        - name: wordpress-persistent-storage-$NAME
+          persistentVolumeClaim:
+          claimName: wp-pvc-production-$NAME
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wp-$NAME
+  namespace: wordpress-production
+spec:
+  selector:
+    app: wordpress-$NAME
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080

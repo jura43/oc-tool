@@ -1,0 +1,141 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-production-$NAME
+  namespace: wordpress-production
+data:
+  wp.conf: |
+    server {
+    listen 8080 default_server;
+    server_name _;
+    location / {
+        proxy_pass http://wp-$NAME;
+      }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-production-$NAME
+  namespace: wordpress-production
+spec:
+  selector:
+    matchLabels:
+      app: nginx-production-$NAME
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-production-$NAME
+    spec:
+      containers:
+        - name: nginx-production-$NAME
+          image: docker.io/bitnami/nginx:latest
+          volumeMounts:
+            - name: nginx-production-$NAME
+              mountPath: /opt/bitnami/nginx/conf/server_blocks/wp.conf
+              subPath: wp.conf
+          ports:
+            - containerPort: 8080
+      volumes:
+        - name: nginx-production-$NAME
+          configMap:
+            name: nginx-production-$NAME
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-production-$NAME
+  namespace: wordpress-production
+spec:
+  selector:
+    app: ngnix-production-$NAME
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
+---
+apiVersion: v1
+kind: Route
+metadata:
+  name: wordpress-production-$NAME
+  namespace: wordpress-production
+spec:
+  to:
+    kind: Service
+    name: nginx-production-$NAME
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-test-$NAME
+  namespace: wordpress-test
+data:
+  wp.conf: |
+    server {
+    listen 8080 default_server;
+    server_name _;
+    location / {
+        proxy_pass http://wp-test-$NAME;
+      }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test-$NAME
+  namespace: wordpress-test
+spec:
+  selector:
+    matchLabels:
+      app: nginx-test-$NAME
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-test-$NAME
+    spec:
+      containers:
+        - name: nginx-test-$NAME
+          image: docker.io/bitnami/nginx:latest
+          volumeMounts:
+            - name: nginx-test-$NAME
+              mountPath: /opt/bitnami/nginx/conf/server_blocks/wp.conf
+              subPath: wp.conf
+          ports:
+            - containerPort: 8080
+      volumes:
+        - name: nginx-test-$NAME
+          configMap:
+            name: nginx-test-$NAME
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-test-$NAME
+  namespace: wordpress-test
+spec:
+  selector:
+    app: nginx-test-$NAME
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
+---
+apiVersion: v1
+kind: Route
+metadata:
+  name: wordpress-test-$NAME
+  namespace: wordpress-test
+spec:
+  to:
+    kind: Service
+    name: nginx-test-$NAME
