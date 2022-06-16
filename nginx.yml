@@ -12,7 +12,7 @@ data:
     location / {
         proxy_pass http://wp-$NAME;
       }
-    }
+    } nginx-production-
 
 ---
 apiVersion: apps/v1
@@ -52,7 +52,7 @@ metadata:
   namespace: wordpress-production
 spec:
   selector:
-    app: ngnix-production-$NAME
+    app: nginx-production-$NAME
   ports:
   - protocol: TCP
     port: 80
